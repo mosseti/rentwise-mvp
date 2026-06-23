@@ -1,0 +1,75 @@
+{% extends 'rentals/base.html' %}
+{% block title %}My Saved Homes | RentWise Nairobi{% endblock %}
+{% block content %}
+<section class="dashboard-head">
+  <div>
+    <p class="eyebrow">House Seeker Account</p>
+    <h1>My Saved Homes</h1>
+    <p class="muted">Keep your favourite units in one place, then compare rent, move-in cost, photos, landmarks, and caretaker contacts before visiting.</p>
+  </div>
+  <div class="hero-actions">
+    <a class="btn primary" href="{% url 'map_search' %}">Search More Homes</a>
+    <a class="btn" href="{% url 'assistant' %}">ai-assistant</a>
+  </div>
+</section>
+
+<section class="section-head">
+  <div>
+    <p class="eyebrow">Shortlist</p>
+    <h2>Units You Bookmarked</h2>
+  </div>
+</section>
+<div class="cards">
+  {% for saved in saved_properties %}
+    {% with unit=saved.saved_unit building=saved.saved_building %}
+      {% if unit and building %}
+        <article class="listing-card">
+          <div class="listing-img" style="background-image:url('{{ unit.cover_image_url|default:building.display_image_url }}')"></div>
+          <div class="listing-body">
+            <p class="muted">{{ building.area.name }} &middot; {{ building.landmark }}</p>
+            <h3>{{ unit.get_unit_type_display }} {{ unit.label }} At {{ building.name }}</h3>
+            <p>{{ unit.notes|default:building.description|default:'No description added yet.' }}</p>
+            <p class="price">KSh {{ unit.rent|floatformat:0 }}/month</p>
+            <p>Move-in about KSh {{ unit.move_in_cost|floatformat:0 }}</p>
+            <div class="card-actions listing-actions">
+              <a class="text-link" href="{{ building.get_absolute_url }}">View Building</a>
+              {% if building.caretaker.profile.phone %}<a class="text-link" href="tel:{{ building.caretaker.profile.phone }}">Call Caretaker</a>{% endif %}
+              <form method="post" action="{% url 'unsave_unit' unit.id %}" class="inline-action bookmark-form">{% csrf_token %}<input type="hidden" name="next" value="{% url 'seeker_dashboard' %}"><button class="bookmark-control active remove" type="submit" aria-label="Remove bookmarked unit" title="Remove Bookmark"><span class="bookmark-icon" aria-hidden="true"></span><span class="bookmark-label">Remove Bookmark</span></button></form>
+            </div>
+          </div>
+        </article>
+      {% endif %}
+    {% endwith %}
+  {% empty %}
+    <div class="empty-state">
+      <h3>No Saved Homes Yet</h3>
+      <p>Browse listings and tap the bookmark icon on a unit you want to compare later.</p>
+      <a class="btn primary" href="{% url 'map_search' %}">Start Searching</a>
+    </div>
+  {% endfor %}
+</div>
+
+<section class="section-head">
+  <div>
+    <p class="eyebrow">Recommended Starting Points</p>
+    <h2>Available Homes To Review</h2>
+  </div>
+</section>
+<div class="cards">
+  {% for unit in latest_units %}
+    <article class="listing-card">
+      <div class="listing-img" style="background-image:url('{{ unit.cover_image_url|default:unit.building.display_image_url }}')"></div>
+      <div class="listing-body">
+        <p class="muted">{{ unit.building.area.name }} &middot; {{ unit.building.landmark }}</p>
+        <h3>{{ unit.get_unit_type_display }} at {{ unit.building.name }}</h3>
+        <p class="price">KSh {{ unit.rent|floatformat:0 }}/month</p>
+        <p>Move-in about KSh {{ unit.move_in_cost|floatformat:0 }}</p>
+        <div class="card-actions listing-actions">
+          <a class="text-link" href="{{ unit.building.get_absolute_url }}">View Building</a>
+          <form method="post" action="{% url 'save_unit' unit.id %}" class="inline-action bookmark-form">{% csrf_token %}<input type="hidden" name="next" value="{% url 'seeker_dashboard' %}"><button class="bookmark-control" type="submit" aria-label="Bookmark this unit" title="Bookmark This Unit"><span class="bookmark-icon" aria-hidden="true"></span><span class="bookmark-label">Bookmark</span></button></form>
+        </div>
+      </div>
+    </article>
+  {% empty %}<p>No public homes are available right now.</p>{% endfor %}
+</div>
+{% endblock %}

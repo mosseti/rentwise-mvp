@@ -1,0 +1,59 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}RentWise Nairobi{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'rentals/css/styles.css' %}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="{% url 'home' %}">RentWise<span>Nairobi</span></a>
+    <nav>
+      <a href="{% url 'map_search' %}">Map Search</a>
+      <a href="{% url 'area_list' %}">Areas</a>
+      <a href="{% url 'assistant' %}">ai-assistant</a>
+      <a href="{% url 'contact' %}">Contact</a>
+      {% if user.is_authenticated and user.profile.role == 'seeker' %}
+        <a href="{% url 'seeker_dashboard' %}">My Saved Homes</a>
+      {% endif %}
+      {% if user.is_authenticated %}
+        {% if user.is_staff or user.profile.role == 'admin' %}
+          <a href="{% url 'admin_caretaker_list' %}">Admin</a>
+        {% endif %}
+      {% endif %}
+      {% if user.is_authenticated %}
+        {% if user.profile.role == 'caretaker' or user.profile.role == 'admin' or user.is_staff %}
+          <a href="{% url 'caretaker_dashboard' %}">Caretaker</a>
+        {% endif %}
+        <form class="inline" action="{% url 'logout' %}" method="post">{% csrf_token %}<button>Logout</button></form>
+      {% else %}
+        <a href="{% url 'login' %}">Login</a>
+        <a href="{% url 'seeker_signup' %}">Looking For A House? Create A Free Account</a>
+        <a class="nav-pill" href="{% url 'signup' %}">Caretaker? Create Your Profile And Listings</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  {% if messages %}
+    <div class="messages">
+      {% for message in messages %}<p class="message {{ message.tags }}">{{ message }}</p>{% endfor %}
+    </div>
+  {% endif %}
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <p>RentWise Nairobi &middot; Marketplace-Style Rental Discovery MVP.</p>
+    <p><a href="{% url 'terms' %}">Terms</a> · <a href="{% url 'privacy' %}">Privacy</a> · <a href="{% url 'contact' %}">Contact</a></p>
+  </footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

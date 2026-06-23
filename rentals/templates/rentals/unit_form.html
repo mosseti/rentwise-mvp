@@ -1,0 +1,25 @@
+{% extends 'rentals/base.html' %}
+{% block content %}
+<section class="form-page">
+  <h1>{{ title }}</h1>
+  <p class="muted">Enter the unit details and upload photos from your device. These photos are shown to house seekers on the public building page.</p>
+
+  {% if unit and unit.images.exists %}
+    <div class="form-card existing-gallery-card">
+      <h2>Current Public Photos</h2>
+      <p class="muted">This is what house seekers can see online for this unit.</p>
+      <div class="manager-gallery">
+        {% for image in unit.images.all %}
+          {% if image.display_url %}<img src="{{ image.display_url }}" alt="{{ unit.get_unit_type_display }} photo {{ forloop.counter }}">{% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" class="form-card">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn primary">Save Unit</button>
+  </form>
+</section>
+{% endblock %}

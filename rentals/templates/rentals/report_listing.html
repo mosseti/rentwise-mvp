@@ -1,0 +1,18 @@
+{% extends 'rentals/base.html' %}
+{% block content %}
+<section class="form-shell">
+  <p class="eyebrow">Report Listing</p>
+  <h1>Help Keep RentWise Accurate</h1>
+  <p class="muted">Report only real issues such as a fake listing, wrong price, wrong location, or a unit that is no longer available.</p>
+  <div class="trust-summary">
+    <strong>{{ building.name }}</strong>
+    <span>{{ building.area.name }}{% if unit %} · {{ unit.get_unit_type_display }}{% endif %}</span>
+  </div>
+  <form method="post" class="panel-form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn primary" type="submit">Submit Report</button>
+    <a class="btn" href="{{ building.get_absolute_url }}">Cancel</a>
+  </form>
+</section>
+{% endblock %}

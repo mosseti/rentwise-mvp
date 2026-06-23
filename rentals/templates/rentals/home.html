@@ -1,0 +1,58 @@
+{% extends 'rentals/base.html' %}
+{% block content %}
+<section class="hero hero-with-photo">
+  <div class="hero-copy">
+    <p class="eyebrow">Nairobi Rentals, Less Walking Around</p>
+    <h1>Find Available Homes From A Map, Then Ask Before You Move.</h1>
+    <p class="lead">Search Available Units, Compare Move-In Costs, Bookmark Exact Homes, And Use The ai-assistant For Practical Rental Guidance.</p>
+    <form class="home-search" action="{% url 'map_search' %}" method="get">
+      <input name="place" type="search" placeholder="Search Roysambu, TRM, Kasarani, USIU...">
+      <button class="btn primary" type="submit">Search Houses</button>
+    </form>
+    <div class="hero-actions">
+      <a class="btn primary" href="{% url 'map_search' %}">Explore Map</a>
+      <a class="btn" href="{% url 'assistant' %}">ai-assistant</a>
+    </div>
+  </div>
+  <div class="hero-card">
+    <h3>Start With Your Area</h3>
+    <div class="chip-grid">
+      {% for area in areas %}<a class="chip" href="{% url 'area_detail' area.slug %}">{{ area.name }}</a>{% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section-head">
+  <div>
+    <p class="eyebrow">Available Now</p>
+    <h2>Sample Listings</h2>
+  </div>
+  <a href="{% url 'map_search' %}">View All On Map &rarr;</a>
+</section>
+<div class="cards">
+  {% for unit in latest_units %}
+    <article class="listing-card">
+      <div class="listing-img" style="background-image:url('{{ unit.cover_image_url|default:unit.building.display_image_url }}')"></div>
+      <div class="listing-body">
+        <p class="muted">{{ unit.building.area.name }} &middot; {{ unit.building.landmark }}</p>
+        <div class="trust-row compact">{% if unit.building.is_verified_listing %}<span class="trust-badge">Verified caretaker</span>{% endif %}<span class="trust-badge soft">Updated {{ unit.updated_at|timesince }} ago</span></div>
+        <h3>{{ unit.get_unit_type_display }} at {{ unit.building.name }}</h3>
+        <p class="price">KSh {{ unit.rent|floatformat:0 }}/month</p>
+        <p>Move-in about KSh {{ unit.move_in_cost|floatformat:0 }}</p>
+        <div class="card-actions listing-actions">
+          <a class="text-link" href="{{ unit.building.get_absolute_url }}">View Building</a>
+          {% if user.is_authenticated and user.profile.role == 'seeker' %}
+            {% if unit.id in saved_unit_ids %}
+              <form method="post" action="{% url 'unsave_unit' unit.id %}" class="inline-action bookmark-form">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="bookmark-control active" type="submit" aria-label="Remove {{ unit.get_unit_type_display }} at {{ unit.building.name }} from bookmarks" title="Remove Bookmark"><span class="bookmark-icon" aria-hidden="true"></span><span class="bookmark-label">Bookmarked</span></button></form>
+            {% else %}
+              <form method="post" action="{% url 'save_unit' unit.id %}" class="inline-action bookmark-form">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="bookmark-control" type="submit" aria-label="Bookmark {{ unit.get_unit_type_display }} at {{ unit.building.name }}" title="Bookmark This Unit"><span class="bookmark-icon" aria-hidden="true"></span><span class="bookmark-label">Bookmark</span></button></form>
+            {% endif %}
+          {% elif not user.is_authenticated %}
+            <a class="bookmark-control guest" href="{% url 'login' %}?next={{ request.path }}" aria-label="Sign in or create an account to bookmark this unit" title="Sign In To Bookmark"><span class="bookmark-icon" aria-hidden="true"></span><span class="bookmark-label">Sign In To Bookmark</span></a>
+          {% endif %}
+        </div>
+      </div>
+    </article>
+  {% empty %}<p>No Units Yet. Load Sample Data Or Add Units As A Caretaker.</p>{% endfor %}
+</div>
+{% endblock %}

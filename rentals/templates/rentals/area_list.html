@@ -1,0 +1,9 @@
+{% extends 'rentals/base.html' %}
+{% block content %}
+<section class="page-title"><h1>Browse Nairobi Areas</h1><p>Select an area or use Map Search when the exact location matters.</p></section>
+<div class="cards small-cards">
+  {% for area in areas %}
+    <a class="area-card" href="{% url 'area_detail' area.slug %}"><h3>{{ area.name }}</h3><p>{{ area.description|default:'View available buildings and units.' }}</p><span>{{ area.building_count }} buildings</span></a>
+  {% endfor %}
+</div>
+{% endblock %}

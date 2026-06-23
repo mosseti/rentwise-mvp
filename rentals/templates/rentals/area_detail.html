@@ -1,0 +1,9 @@
+{% extends 'rentals/base.html' %}
+{% block content %}
+<section class="page-title"><h1>{{ area.name }}</h1><p>{{ area.description }}</p></section>
+<div class="cards">
+  {% for building in buildings %}
+    <article class="listing-card"><div class="listing-img" style="background-image:url('{{ building.display_image_url }}')"></div><div class="listing-body"><p class="muted">{{ building.landmark }}</p><h3>{{ building.name }}</h3><p>Available Units: {{ building.available_count }}</p><p class="price">From KSh {{ building.price_from|default:'--' }}</p><a href="{{ building.get_absolute_url }}">View Units</a></div></article>
+  {% empty %}<p>No buildings in this area yet.</p>{% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'rentals/base.html' %}
+{% block content %}
+<section class="admin-profile-hero">
+  <div class="profile-main-card">
+    <div class="avatar large">{{ caretaker.get_full_name|default:caretaker.username|first|upper }}</div>
+    <div>
+      <p class="eyebrow">Caretaker Profile</p>
+      <h1>{{ caretaker.get_full_name|default:caretaker.username }}</h1>
+      <p class="muted">@{{ caretaker.username }} · {{ caretaker.email|default:'No email' }}{% if caretaker.profile.phone %} · {{ caretaker.profile.phone }}{% endif %}</p>
+      <div class="profile-badges">
+        {% if caretaker.is_active %}<span class="badge success">Active Account</span>{% else %}<span class="badge danger">Inactive Account</span>{% endif %}
+        <span class="badge">{{ caretaker.profile.get_approval_status_display }}</span>
+        {% if caretaker.profile.phone_verified %}<span class="badge success">Phone Verified</span>{% else %}<span class="badge warning">Phone Not Verified</span>{% endif %}
+        <span class="badge">{{ buildings|length }} building{{ buildings|length|pluralize }}</span>
+        <span class="badge">{{ total_available }} available unit{{ total_available|pluralize }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="section-actions">
+    <a class="btn" href="{% url 'admin_caretaker_list' %}">Back To Caretakers</a>
+    <a class="btn" href="{% url 'admin_caretaker_edit' caretaker.id %}">Edit Profile</a>
+    <a class="btn primary" href="{% url 'building_create' %}">Add Building</a>
+  </div>
+</section>
+
+<section class="dash-card admin-action-panel">
+  <h2>Verification Controls</h2>
+  <p class="muted">Approve caretakers and verify phone numbers before their listings appear publicly.</p>
+  <div class="actions">
+    <form method="post" action="{% url 'admin_caretaker_action' caretaker.id %}">{% csrf_token %}<input type="hidden" name="action" value="approve"><button class="btn primary">Approve Caretaker</button></form>
+    <form method="post" action="{% url 'admin_caretaker_action' caretaker.id %}">{% csrf_token %}<input type="hidden" name="action" value="verify_phone"><button class="btn">Mark Phone Verified</button></form>
+    <form method="post" action="{% url 'admin_caretaker_action' caretaker.id %}">{% csrf_token %}<input type="hidden" name="action" value="suspend"><button class="btn danger">Suspend</button></form>
+    <form method="post" action="{% url 'admin_caretaker_action' caretaker.id %}">{% csrf_token %}<input type="hidden" name="action" value="unverify_phone"><button class="btn">Unverify Phone</button></form>
+  </div>
+</section>
+
+<section class="section-head compact-head">
+  <div>
+    <h2>Managed Properties</h2>
+    <p class="muted">Admins can add, edit, reassign, and update units for any caretaker.</p>
+  </div>
+</section>
+
+<div class="property-admin-grid">
+  {% for building in buildings %}
+    <article class="property-admin-card">
+      <div class="property-card-top">
+        <div class="dash-building-media">
+          {% if building.display_image_url %}<img src="{{ building.display_image_url }}" alt="{{ building.name }} photo">{% else %}<div class="building-thumb-placeholder">No building photo</div>{% endif %}
+        </div>
+        <div>
+          <p class="eyebrow">{{ building.area.name }}</p>
+          <h2>{{ building.name }}</h2>
+          <p class="muted">{{ building.landmark|default:'No landmark added' }}</p>
+        </div>
+        {% if building.is_published %}<span class="badge success">Published</span>{% else %}<span class="badge danger">Hidden</span>{% endif %}
+      </div>
+      <div class="admin-mini-stats">
+        <span><strong>{{ building.units.count }}</strong> units</span>
+        <span><strong>{{ building.available_count }}</strong> available</span>
+        {% if building.price_from %}<span><strong>KSh {{ building.price_from }}</strong> from</span>{% endif %}
+      </div>
+      <div class="actions">
+        <a class="btn small" href="{% url 'building_edit' building.id %}">Edit Building</a>
+        <a class="btn small primary" href="{% url 'unit_create' %}">Add Unit</a>
+        <a class="btn small" href="{{ building.get_absolute_url }}">Public Page</a>
+      </div>
+      <div class="responsive-table admin-unit-table">
+        <table>
+          <thead><tr><th>Unit</th><th>Rent</th><th>Photos shown to users</th><th>Status</th><th>Manage</th></tr></thead>
+          <tbody>
+            {% for unit in building.units.all %}
+              <tr>
+                <td data-label="Unit"><strong>{{ unit.get_unit_type_display }}</strong>{% if unit.label %}<br><span class="muted">{{ unit.label }}</span>{% endif %}</td>
+                <td data-label="Rent">KSh {{ unit.rent }}<br><span class="muted">Move-in: KSh {{ unit.move_in_cost }}</span></td>
+                <td data-label="Photos"><div class="manager-thumbs">{% for image in unit.images.all|slice:":4" %}{% if image.display_url %}<img src="{{ image.display_url }}" alt="{{ unit.get_unit_type_display }} image {{ forloop.counter }}">{% endif %}{% empty %}<span class="muted">No photos</span>{% endfor %}</div></td>
+                <td data-label="Status"><span class="status-pill status-{{ unit.status }}">{{ unit.get_status_display }}</span></td>
+                <td data-label="Manage"><a href="{% url 'unit_edit' unit.id %}">Edit unit</a></td>
+              </tr>
+            {% empty %}<tr><td colspan="5">No units yet. Add a unit so users can see prices and photos.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </article>
+  {% empty %}
+    <article class="dash-card"><p>This caretaker has no buildings yet. Use <strong>Add Building</strong> to create their first managed property.</p></article>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'rentals/base.html' %}
+{% block content %}
+<section class="form-page">
+  <h1>{{ title }}</h1>
+  <p class="muted">Admins can create and update caretaker accounts before assigning properties.</p>
+  <form method="post" class="form-card">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn primary">Save caretaker</button>
+  </form>
+</section>
+{% endblock %}

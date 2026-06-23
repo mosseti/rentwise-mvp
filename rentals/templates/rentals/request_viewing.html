@@ -1,0 +1,8 @@
+{% extends 'rentals/base.html' %}
+{% block content %}
+<section class="form-page">
+  <h1>Request Viewing</h1>
+  <p>{{ unit.get_unit_type_display }} at {{ unit.building.name }} · KSh {{ unit.rent|floatformat:0 }}/month</p>
+  <form method="post" class="form-card">{% csrf_token %}{{ form.as_p }}<button class="btn primary">Send Request</button></form>
+</section>
+{% endblock %}

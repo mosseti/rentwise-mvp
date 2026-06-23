@@ -1,0 +1,42 @@
+from django.urls import path
+from django.views.generic import RedirectView
+from . import views
+
+urlpatterns = [
+    path('', views.home, name='home'),
+    path('areas/', views.area_list, name='area_list'),
+    path('areas/<slug:slug>/', views.area_detail, name='area_detail'),
+    path('map/', views.map_search, name='map_search'),
+    path('api/buildings/', views.building_markers_api, name='building_markers_api'),
+    path('api/geocode/', views.geocode_place_api, name='geocode_place_api'),
+    path('api/place-suggestions/', views.place_suggestions_api, name='place_suggestions_api'),
+    path('buildings/<slug:slug>/', views.building_detail, name='building_detail'),
+    path('units/<int:unit_id>/request-viewing/', views.request_viewing, name='request_viewing'),
+    path('units/<int:unit_id>/contact/<str:method>/', views.contact_caretaker, name='contact_caretaker'),
+    path('units/<int:unit_id>/report/', views.report_listing, name='report_unit'),
+    path('buildings/<int:building_id>/report/', views.report_listing, name='report_building'),
+    path('assistant/', views.assistant_chat, name='assistant'),
+    path('account/', views.seeker_dashboard, name='seeker_dashboard'),
+    path('units/<int:pk>/save/', views.save_unit, name='save_unit'),
+    path('units/<int:pk>/unsave/', views.unsave_unit, name='unsave_unit'),
+    path('terms/', views.terms, name='terms'),
+    path('privacy/', views.privacy, name='privacy'),
+    path('contact/', views.contact, name='contact'),
+    path('caretaker/', views.caretaker_dashboard, name='caretaker_dashboard'),
+    path('admin/', views.admin_caretaker_list, name='admin_caretaker_list'),
+    path('admin/caretakers/new/', views.admin_caretaker_create, name='admin_caretaker_create'),
+    path('admin/caretakers/<int:pk>/', views.admin_caretaker_detail, name='admin_caretaker_detail'),
+    path('admin/caretakers/<int:pk>/edit/', views.admin_caretaker_edit, name='admin_caretaker_edit'),
+    path('admin/caretakers/<int:pk>/action/', views.admin_caretaker_action, name='admin_caretaker_action'),
+    path('admin/analytics/', views.admin_analytics, name='admin_analytics'),
+    # Old platform URLs redirect to the cleaner /admin/ routes.
+    path('platform/caretakers/', RedirectView.as_view(pattern_name='admin_caretaker_list', permanent=False)),
+    path('platform/caretakers/new/', RedirectView.as_view(pattern_name='admin_caretaker_create', permanent=False)),
+    path('platform/caretakers/<int:pk>/', RedirectView.as_view(pattern_name='admin_caretaker_detail', permanent=False)),
+    path('platform/caretakers/<int:pk>/edit/', RedirectView.as_view(pattern_name='admin_caretaker_edit', permanent=False)),
+    path('caretaker/buildings/new/', views.building_create, name='building_create'),
+    path('caretaker/buildings/<int:pk>/edit/', views.building_edit, name='building_edit'),
+    path('caretaker/units/new/', views.unit_create, name='unit_create'),
+    path('caretaker/units/<int:pk>/edit/', views.unit_edit, name='unit_edit'),
+    path('caretaker/units/<int:pk>/toggle/', views.unit_toggle_available, name='unit_toggle_available'),
+]

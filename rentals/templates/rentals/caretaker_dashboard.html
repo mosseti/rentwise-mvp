@@ -1,0 +1,78 @@
+{% extends 'rentals/base.html' %}
+{% block content %}
+<section class="section-head">
+  <div>
+    <p class="eyebrow">{% if user.is_staff or user.profile.role == 'admin' %}Admin property control{% else %}Caretaker portal{% endif %}</p>
+    <h1>{% if user.is_staff or user.profile.role == 'admin' %}All buildings and units{% else %}Your buildings and units{% endif %}</h1>
+    <p class="muted">Manage Properties, Unit Details, Availability, And Photos From One Place.</p>
+  </div>
+  <div class="section-actions">
+    <a class="btn" href="{% url 'home' %}">Visit Website</a>
+    <a class="btn" href="{% url 'map_search' %}">View Market Map</a>
+    {% if user.is_staff or user.profile.role == 'admin' %}<a class="btn" href="{% url 'admin_caretaker_list' %}">Caretakers</a>{% endif %}
+    <a class="btn" href="{% url 'building_create' %}">Add Building</a>
+    <a class="btn primary" href="{% url 'unit_create' %}">Add Unit</a>
+  </div>
+</section>
+{% if profile and profile.role == 'caretaker' and not profile.can_publish_listings %}
+  <section class="notice-card warning">
+    <h2>Listings Are Saved As Drafts Until Verification</h2>
+    <p>Your account status is <strong>{{ profile.get_approval_status_display }}</strong>. Phone verified: <strong>{% if profile.phone_verified %}Yes{% else %}No{% endif %}</strong>.</p>
+    <p>You can add buildings and units now, but they will only appear publicly after the RentWise admin approves your profile and verifies your phone number.</p>
+  </section>
+{% endif %}
+<div class="dashboard-list">
+  {% for building in buildings %}
+    <article class="dash-card">
+      <div class="dash-card-head">
+        <div class="dash-building-media">
+          {% if building.display_image_url %}<img src="{{ building.display_image_url }}" alt="{{ building.name }} photo">{% else %}<div class="building-thumb-placeholder">No building photo</div>{% endif %}
+        </div>
+        <div>
+          <h2>{{ building.name }}</h2>
+          <p>{{ building.area.name }} · {{ building.landmark|default:'No landmark added' }}</p>
+          {% if user.is_staff or user.profile.role == 'admin' %}
+            <p class="muted">Caretaker: {{ building.caretaker.get_full_name|default:building.caretaker.username }}{% if building.caretaker.profile.phone %} · {{ building.caretaker.profile.phone }}{% endif %}</p>
+          {% endif %}
+        </div>
+        <div class="status-stack">
+          <p class="badge">{{ building.available_count }} available</p>
+          {% if building.is_published %}<p class="badge success">Published</p>{% else %}<p class="badge danger">Draft/Hidden</p>{% endif %}
+        </div>
+      </div>
+      <div class="actions">
+        <a href="{% url 'building_edit' building.id %}">Edit Building</a>
+        <a href="{% url 'unit_create' %}">Add Unit</a>
+        <a href="{{ building.get_absolute_url }}">Public Page</a>
+        {% if user.is_staff or user.profile.role == 'admin' %}<a href="{% url 'admin_caretaker_detail' building.caretaker.id %}">Caretaker Profile</a>{% endif %}
+      </div>
+      <div class="responsive-table">
+        <table>
+          <thead><tr><th>Unit</th><th>Rent</th><th>Photos shown to users</th><th>Status</th><th>Manage</th></tr></thead>
+          <tbody>
+            {% for unit in building.units.all %}
+              <tr>
+                <td data-label="Unit">{{ unit.get_unit_type_display }} {{ unit.label }}</td>
+                <td data-label="Rent">KSh {{ unit.rent }}</td>
+                <td data-label="Photos">
+                  <div class="manager-thumbs">
+                    {% for image in unit.images.all|slice:":4" %}
+                      {% if image.display_url %}<img src="{{ image.display_url }}" alt="{{ unit.get_unit_type_display }} image {{ forloop.counter }}">{% endif %}
+                    {% empty %}
+                      <span class="muted">No photos</span>
+                    {% endfor %}
+                  </div>
+                </td>
+                <td data-label="Status">{{ unit.get_status_display }}</td>
+                <td data-label="Manage"><a href="{% url 'unit_edit' unit.id %}">Edit</a><form class="inline" method="post" action="{% url 'unit_toggle_available' unit.id %}">{% csrf_token %}<button>Toggle</button></form></td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5">No units yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </article>
+  {% empty %}<p>No buildings yet. Add your first building and select its location on the map.</p>{% endfor %}
+</div>
+{% endblock %}

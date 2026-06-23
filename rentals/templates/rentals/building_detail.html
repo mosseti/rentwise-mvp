@@ -1,0 +1,94 @@
+{% extends 'rentals/base.html' %}
+{% load static %}
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+{% endblock %}
+{% block content %}
+<section class="detail-hero">
+  {% if building.display_image_url %}<div class="detail-image" style="background-image:url('{{ building.display_image_url }}')"></div>{% else %}<div class="detail-image no-photo"><span>No Building Photo Added Yet</span></div>{% endif %}
+  <div class="detail-copy">
+    <p class="eyebrow">{{ building.area.name }}</p>
+    <h1>{{ building.name }}</h1>
+    <p>{{ building.landmark }}</p>
+    <p>{{ building.description }}</p>
+    <p class="muted">Amenities: {{ building.amenities|default:'Not specified' }}</p>
+    <div class="trust-row">
+      {% if building.is_verified_listing %}<span class="trust-badge">Verified caretaker</span>{% endif %}
+      <span class="trust-badge soft">Updated {{ building.updated_at|timesince }} ago</span>
+      <a class="text-link danger" href="{% url 'report_building' building.id %}">Report listing</a>
+    </div>
+    <p class="notice">Use the bookmark icon on a specific unit below to save the exact home you like. Always view the unit before paying any deposit.</p>
+    <div class="contact-card">
+      <p class="eyebrow">Caretaker Contact</p>
+      <h3>{{ building.caretaker.get_full_name|default:building.caretaker.username }}</h3>
+      {% if building.caretaker.profile.phone %}
+        <p class="contact-phone">{{ building.caretaker.profile.phone }}</p>
+        {% with first_unit=available_units.first %}
+          {% if first_unit %}
+            <a class="btn primary" href="{% url 'contact_caretaker' first_unit.id 'call' %}">Call Caretaker To Arrange A Visit</a>
+            <a class="btn" href="{% url 'contact_caretaker' first_unit.id 'whatsapp' %}">WhatsApp Caretaker</a>
+          {% endif %}
+        {% endwith %}
+      {% else %}
+        <p class="notice">Caretaker Phone Number Has Not Been Added Yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+<section class="split">
+  <div>
+    <h2>Available Units</h2>
+    <p class="muted">View The Unit Photos And Prices Online, Then Call The Caretaker To Arrange A Physical Visit.</p>
+    <div class="unit-list">
+      {% for unit in available_units %}
+        <article class="unit-card">
+          <div class="unit-gallery">
+            {% if unit.cover_image_url %}<img src="{{ unit.cover_image_url }}" alt="{{ unit.get_unit_type_display }} at {{ building.name }}">{% endif %}
+            {% for image in unit.images.all %}
+              {% if image.display_url and image.display_url != unit.cover_image_url %}<img src="{{ image.display_url }}" alt="{{ image.caption|default:unit.get_unit_type_display }}">{% endif %}
+            {% empty %}
+              {% if not unit.cover_image_url %}<div class="image-placeholder">No Unit Photos Added Yet</div>{% endif %}
+            {% endfor %}
+          </div>
+          <div class="unit-content">
+            <div>
+              <h3>{{ unit.get_unit_type_display }} {{ unit.label }}</h3>
+              <p>{{ unit.notes|default:'Available for viewing.' }}</p>
+            </div>
+            <div class="unit-price">
+              <strong>KSh {{ unit.rent|floatformat:0 }}</strong>
+              <span>Move-in KSh {{ unit.move_in_cost|floatformat:0 }}</span>
+              <span class="muted small-text">Updated {{ unit.updated_at|timesince }} ago</span>
+              <div class="unit-actions">
+                {% if user.is_authenticated and user.profile.role == 'seeker' %}
+                  {% if unit.id in saved_unit_ids %}
+                    <form method="post" action="{% url 'unsave_unit' unit.id %}" class="inline-action bookmark-form">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="bookmark-control active" type="submit" aria-label="Remove {{ unit.get_unit_type_display }} at {{ building.name }} from bookmarks" title="Remove Bookmark"><span class="bookmark-icon" aria-hidden="true"></span><span class="bookmark-label">Bookmarked</span></button></form>
+                  {% else %}
+                    <form method="post" action="{% url 'save_unit' unit.id %}" class="inline-action bookmark-form">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="bookmark-control" type="submit" aria-label="Bookmark {{ unit.get_unit_type_display }} at {{ building.name }}" title="Bookmark This Unit"><span class="bookmark-icon" aria-hidden="true"></span><span class="bookmark-label">Bookmark</span></button></form>
+                  {% endif %}
+                {% elif not user.is_authenticated %}
+                  <a class="bookmark-control guest" href="{% url 'login' %}?next={{ request.path }}" aria-label="Sign in or create an account to bookmark this unit" title="Sign In To Bookmark"><span class="bookmark-icon" aria-hidden="true"></span><span class="bookmark-label">Sign In To Bookmark</span></a>
+                {% endif %}
+                {% if building.caretaker.profile.phone %}
+                  <a class="btn small primary" href="{% url 'contact_caretaker' unit.id 'call' %}">Call</a>
+                  <a class="btn small" href="{% url 'contact_caretaker' unit.id 'whatsapp' %}">WhatsApp</a>
+                {% endif %}
+                <a class="text-link danger" href="{% url 'report_unit' unit.id %}">Report</a>
+              </div>
+            </div>
+          </div>
+        </article>
+      {% empty %}<p>No Available Units At This Building Right Now.</p>{% endfor %}
+    </div>
+  </div>
+  <aside class="map-side">
+    <h2>Location</h2>
+    <div id="detail-map" class="small-map" data-lat="{{ building.latitude }}" data-lng="{{ building.longitude }}" data-name="{{ building.name }}"></div>
+    <a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query={{ building.latitude }},{{ building.longitude }}">Open In External Map</a>
+  </aside>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{% static 'rentals/js/detail_map.js' %}"></script>
+{% endblock %}

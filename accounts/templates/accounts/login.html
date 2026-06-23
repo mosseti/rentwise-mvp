@@ -1,0 +1,4 @@
+{% extends 'rentals/base.html' %}
+{% block content %}
+<section class="form-page"><h1>Login</h1><form method="post" class="form-card">{% csrf_token %}{{ form.as_p }}<button class="btn primary">Login</button></form><p class="muted">Looking for a house? <a href="{% url 'seeker_signup' %}">Create a free house seeker account.</a></p><p class="muted">Caretaker? <a href="{% url 'signup' %}">Create your profile and listings.</a></p></section>
+{% endblock %}

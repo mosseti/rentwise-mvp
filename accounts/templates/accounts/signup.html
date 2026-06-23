@@ -1,0 +1,13 @@
+{% extends 'rentals/base.html' %}
+{% block title %}Caretaker signup | RentWise Nairobi{% endblock %}
+{% block content %}
+<section class="form-page">
+  <h1>Caretaker? Create Your Profile And Listings</h1>
+  <p>Create A Caretaker Account, then add your buildings, unit details, prices, availability, and photos from your device.</p>
+  <form method="post" class="form-card">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn primary">Create Caretaker profile</button>
+  </form>
+</section>
+{% endblock %}

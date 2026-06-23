@@ -1,0 +1,15 @@
+{% extends 'rentals/base.html' %}
+{% block content %}
+<section class="form-shell">
+  <p class="eyebrow">Caretaker Contact</p>
+  <h1>Call The Caretaker</h1>
+  <p class="muted">We recorded this as a contact lead so the platform can measure which listings are useful.</p>
+  <div class="trust-summary">
+    <strong>{{ unit.get_unit_type_display }} at {{ unit.building.name }}</strong>
+    <span>{{ unit.building.area.name }} · {{ unit.building.landmark }}</span>
+  </div>
+  <p class="contact-phone">{{ phone }}</p>
+  <a class="btn primary" href="tel:{{ phone }}">Call Now</a>
+  <a class="btn" href="{{ unit.building.get_absolute_url }}">Back To Listing</a>
+</section>
+{% endblock %}

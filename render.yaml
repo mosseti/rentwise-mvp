@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: rentwise
+    runtime: python
+    buildCommand: ./build.sh
+    startCommand: python manage.py migrate && gunicorn rentwise.wsgi:application --log-file -
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.5
+      - key: DEBUG
+        value: "False"
+      - key: DB_SSL_REQUIRE
+        value: "True"
+      - key: DB_CONN_MAX_AGE
+        value: "600"
+      - key: DISABLE_COLLECTSTATIC
+        value: "0"

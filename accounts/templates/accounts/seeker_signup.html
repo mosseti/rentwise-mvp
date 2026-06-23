@@ -1,0 +1,14 @@
+{% extends 'rentals/base.html' %}
+{% block title %}House Seeker Signup | RentWise Nairobi{% endblock %}
+{% block content %}
+<section class="form-page">
+  <h1>Looking For A House? Create A Free Account</h1>
+  <p>Browse freely without an account. Create one only when you want to save homes, compare them later, and return to your shortlist.</p>
+  <form method="post" class="form-card">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn primary">Create House Seeker Account</button>
+  </form>
+  <p class="muted">Are you a caretaker? <a href="{% url 'signup' %}">Create your profile and listings instead.</a></p>
+</section>
+{% endblock %}

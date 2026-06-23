@@ -1,0 +1,62 @@
+{% extends 'rentals/base.html' %}
+{% block content %}
+<section class="admin-hero">
+  <div>
+    <p class="eyebrow">Platform Admin</p>
+    <h1>RentWise Control Room</h1>
+    <p class="muted">Manage verified caretakers, their buildings, units, photos, and availability from one clean workspace.</p>
+  </div>
+  <div class="section-actions">
+    <a class="btn" href="{% url 'admin_analytics' %}">Analytics</a>
+    <a class="btn" href="{% url 'caretaker_dashboard' %}">All Properties</a>
+    <a class="btn primary" href="{% url 'admin_caretaker_create' %}">Create Caretaker</a>
+  </div>
+</section>
+
+<section class="admin-stats">
+  <article><span>{{ total_caretakers }}</span><p>Caretakers</p></article>
+  <article><span>{{ total_buildings }}</span><p>Buildings</p></article>
+  <article><span>{{ total_units }}</span><p>Total Units</p></article>
+  <article><span>{{ available_units }}</span><p>Public Available Units</p></article>
+  <article><span>{{ pending_caretakers }}</span><p>Pending Caretakers</p></article>
+</section>
+
+<section class="admin-toolbar">
+  <div>
+    <h2>Caretaker Profiles</h2>
+    <p class="muted">Open a caretaker to manage their buildings and units with the same permissions they have.</p>
+  </div>
+</section>
+
+<div class="admin-grid">
+  {% for caretaker in caretakers %}
+    <article class="admin-caretaker-card">
+      <div class="avatar">{{ caretaker.get_full_name|default:caretaker.username|first|upper }}</div>
+      <div class="admin-card-body">
+        <div class="dash-card-head">
+          <div>
+            <h2>{{ caretaker.get_full_name|default:caretaker.username }}</h2>
+            <p class="muted">@{{ caretaker.username }}</p>
+          </div>
+          <div class="status-stack">
+            {% if caretaker.is_active %}<span class="badge success">Active</span>{% else %}<span class="badge danger">Inactive</span>{% endif %}
+            <span class="badge">{{ caretaker.profile.get_approval_status_display }}</span>
+            {% if caretaker.profile.phone_verified %}<span class="badge success">Phone Verified</span>{% else %}<span class="badge warning">Phone Pending</span>{% endif %}
+          </div>
+        </div>
+        <div class="profile-lines">
+          <p><strong>Email</strong><span>{{ caretaker.email|default:'No Email Added' }}</span></p>
+          <p><strong>Phone</strong><span>{{ caretaker.profile.phone|default:'No Phone Added' }}</span></p>
+          <p><strong>Portfolio</strong><span>{{ caretaker.building_count }} building{{ caretaker.building_count|pluralize }} · {{ caretaker.unit_count }} unit{{ caretaker.unit_count|pluralize }}</span></p>
+        </div>
+        <div class="actions">
+          <a class="btn small primary" href="{% url 'admin_caretaker_detail' caretaker.id %}">Manage Profile</a>
+          <a class="btn small" href="{% url 'admin_caretaker_edit' caretaker.id %}">Edit Details</a>
+        </div>
+      </div>
+    </article>
+  {% empty %}
+    <article class="dash-card"><p>No Caretakers Yet. Create The First Caretaker Account To Start Adding Managed Buildings.</p></article>
+  {% endfor %}
+</div>
+{% endblock %}

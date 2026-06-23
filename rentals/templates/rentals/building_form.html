@@ -1,0 +1,30 @@
+{% extends 'rentals/base.html' %}
+{% load static %}
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+{% endblock %}
+{% block content %}
+<section class="form-page wide">
+  <h1>{{ title }}</h1>
+  <p>Click the exact building location on the map, drag the marker if needed, then save. Latitude and longitude are filled automatically.</p>
+  <p class="help">Click the map or use current location to set the building position accurately.</p>
+  <form method="post" enctype="multipart/form-data" class="form-grid">{% csrf_token %}
+    <div class="form-card">
+      {% if form.instance.pk and form.instance.display_image_url %}
+        <div class="existing-gallery-card">
+          <h2>Current Building Photo</h2>
+          <div class="building-preview"><img src="{{ form.instance.display_image_url }}" alt="{{ form.instance.name }}"></div>
+          <p class="help">This is the building photo users will see on the public page and map cards.</p>
+        </div>
+      {% endif %}
+      {{ form.as_p }}
+      <button class="btn primary">Save Building</button>
+    </div>
+    <div class="form-card"><h2>Set Location</h2><div id="pick-map" class="picker-map"></div><button type="button" class="btn full" id="pick-current">Use My Current Location</button><p class="help">Caretakers do not need to type coordinates. Click the map or use device location.</p></div>
+  </form>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{% static 'rentals/js/location_picker.js' %}"></script>
+{% endblock %}

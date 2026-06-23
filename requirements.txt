@@ -1,0 +1,10 @@
+Django==5.2.*
+python-dotenv==1.0.1
+Pillow==10.4.0
+dj-database-url==2.2.0
+psycopg[binary]>=3.2.10,<4.0
+gunicorn==23.0.0
+whitenoise==6.7.0
+sentry-sdk==2.19.2
+django-storages==1.14.4
+boto3==1.35.99

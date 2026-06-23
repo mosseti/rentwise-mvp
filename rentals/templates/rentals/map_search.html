@@ -1,0 +1,67 @@
+{% extends 'rentals/base.html' %}
+{% load static %}
+{% block title %}Map Search · RentWise{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+{% endblock %}
+{% block content %}
+<section class="page-title compact">
+  <p class="eyebrow">Map-Style Rental Search</p>
+  <h1>Search Where You Want To Live</h1>
+  <p>Type an estate, road, mall, school, or landmark. RentWise will search verified available units in that exact area first, then nearby surrounding areas.</p>
+</section>
+<section class="search-hero-panel">
+  <label for="place-search">Search Area, Estate, Road, Or Landmark</label>
+  <div class="search-row">
+    <input id="place-search" list="place-suggestions" type="search" placeholder="e.g. Roysambu, Near TRM Mall, Kasarani, USIU, Pipeline" autocomplete="off">
+    <datalist id="place-suggestions"></datalist>
+    <button class="btn primary" id="go-place" type="button">Search Houses</button>
+  </div>
+  <p class="help">Results come from verified caretaker/admin listings in RentWise. The app will not invent houses that are not in the database.</p>
+</section>
+<section class="map-layout">
+  <aside class="filter-panel">
+    <h2>Filters</h2>
+    <label>Search Radius
+      <select id="radius-filter">
+        <option value="2">2 km</option>
+        <option value="5" selected>5 km</option>
+        <option value="10">10 km</option>
+        <option value="20">20 km</option>
+      </select>
+    </label>
+    <label>Area
+      <select id="area-filter">
+        <option value="">All Nairobi Areas</option>
+        {% for area in areas %}<option value="{{ area.slug }}">{{ area.name }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Unit Type
+      <select id="unit-filter">
+        <option value="">Any Unit</option>
+        {% for value,label in unit_types %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Max Rent
+      <input id="rent-filter" type="number" placeholder="e.g. 15000">
+    </label>
+    <label>Search Listings Text
+      <input id="query-filter" type="search" placeholder="Building, area, or landmark">
+    </label>
+    <button class="btn primary full" id="apply-filters" type="button">Apply Filters</button>
+    <button class="btn full" id="use-location" type="button">Use My Current Location</button>
+    <button class="btn full" id="clear-place" type="button">Clear Map Search</button>
+    <hr>
+    <p class="help">Exact matches are within about 2 km of your chosen place. Surrounding results are shown within the selected radius.</p>
+  </aside>
+  <div class="map-panel">
+    <div id="search-status" class="search-status muted">Search an area or use filters to see available buildings.</div>
+    <div id="rent-map" class="big-map"></div>
+    <div id="map-results" class="map-results"></div>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{% static 'rentals/js/map_search.js' %}"></script>
+{% endblock %}

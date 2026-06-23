@@ -1,0 +1,97 @@
+{% extends 'rentals/base.html' %}
+{% block title %}ai-assistant · RentWise{% endblock %}
+{% block content %}
+<section class="assistant-page">
+  <div class="assistant-intro">
+    <p class="eyebrow">ai-assistant</p>
+    <h1>Ask About Houses, Costs, And Rental Safety.</h1>
+    <p>The ai-assistant uses current RentWise listings as context and gives practical guidance about areas, budgets, unit types, viewing, deposits, and rental safety.</p>
+  </div>
+  <div class="chat-shell" id="assistant-chat-shell">
+    <div class="chat-messages" id="assistant-chat-messages">
+      {% for m in chat_messages %}
+        <div class="bubble {{ m.role }}"><p>{{ m.content|linebreaksbr }}</p></div>
+      {% empty %}
+        <div class="bubble assistant"><p>Hi. Ask me things like: “Find A Bedsitter in Roysambu under 10000”, “Which unit has the lowest move-in cost?”, or “What should I check before paying deposit?”</p></div>
+      {% endfor %}
+      <div id="assistant-chat-bottom" aria-hidden="true"></div>
+    </div>
+    <form method="post" class="chat-form" id="assistant-chat-form">{% csrf_token %}<input name="message" id="assistant-chat-input" placeholder="Ask about an area, budget, unit type, or rental safety..." required><button class="btn primary" id="assistant-chat-submit" type="submit">Send</button></form>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+  (function () {
+    function scrollAssistantToBottom() {
+      var messages = document.getElementById('assistant-chat-messages');
+      if (!messages) return;
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function appendBubble(role, text) {
+      var messages = document.getElementById('assistant-chat-messages');
+      var bottom = document.getElementById('assistant-chat-bottom');
+      if (!messages) return null;
+      var bubble = document.createElement('div');
+      bubble.className = 'bubble ' + role;
+      var paragraph = document.createElement('p');
+      paragraph.textContent = text;
+      bubble.appendChild(paragraph);
+      messages.insertBefore(bubble, bottom || null);
+      scrollAssistantToBottom();
+      return bubble;
+    }
+
+    function getCsrfToken(form) {
+      var input = form.querySelector('input[name="csrfmiddlewaretoken"]');
+      return input ? input.value : '';
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var form = document.getElementById('assistant-chat-form');
+      var input = document.getElementById('assistant-chat-input');
+      var submit = document.getElementById('assistant-chat-submit');
+      scrollAssistantToBottom();
+
+      if (!form || !input || !window.fetch) return;
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        var question = input.value.trim();
+        if (!question) return;
+
+        appendBubble('user', question);
+        input.value = '';
+        input.focus();
+        if (submit) submit.disabled = true;
+        var waitingBubble = appendBubble('assistant', 'Thinking...');
+
+        var body = new URLSearchParams();
+        body.append('message', question);
+        body.append('csrfmiddlewaretoken', getCsrfToken(form));
+
+        fetch(form.action || window.location.href, {
+          method: 'POST',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+          },
+          body: body.toString(),
+          credentials: 'same-origin'
+        }).then(function (response) {
+          if (!response.ok) throw new Error('Assistant request failed');
+          return response.json();
+        }).then(function (data) {
+          if (waitingBubble) waitingBubble.querySelector('p').textContent = data.reply || 'I could not answer that. Please try again.';
+        }).catch(function () {
+          if (waitingBubble) waitingBubble.querySelector('p').textContent = 'Sorry, the assistant could not respond. Please try again.';
+        }).finally(function () {
+          if (submit) submit.disabled = false;
+          scrollAssistantToBottom();
+        });
+      });
+    });
+  })();
+</script>
+{% endblock %}

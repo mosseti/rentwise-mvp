@@ -1,0 +1,53 @@
+{% extends 'rentals/base.html' %}
+{% block content %}
+<section class="admin-hero">
+  <div>
+    <p class="eyebrow">Platform Analytics</p>
+    <h1>Early Launch Activity</h1>
+    <p class="muted">Lightweight product metrics for the MVP: searches, contact leads, viewing requests, reports, and assistant usage.</p>
+  </div>
+  <div class="section-actions"><a class="btn" href="{% url 'admin_caretaker_list' %}">Back To Admin</a></div>
+</section>
+<section class="admin-stats">
+  <article><span>{{ total_searches }}</span><p>Searches</p></article>
+  <article><span>{{ total_leads }}</span><p>Contact Leads</p></article>
+  <article><span>{{ total_requests }}</span><p>Viewing Requests</p></article>
+  <article><span>{{ open_report_count }}</span><p>Open Reports</p></article>
+  <article><span>{{ assistant_messages }}</span><p>Assistant Messages</p></article>
+</section>
+<section class="admin-grid two-col">
+  <article class="dash-card">
+    <h2>Top Searches</h2>
+    {% for item in top_searches %}
+      <p><strong>{{ item.query }}</strong> <span class="muted">{{ item.count }} time{{ item.count|pluralize }}</span></p>
+    {% empty %}<p class="muted">No searches recorded yet.</p>{% endfor %}
+  </article>
+  <article class="dash-card">
+    <h2>Latest Contact Leads</h2>
+    {% for lead in latest_leads %}
+      <p><strong>{{ lead.get_method_display }}</strong> for {{ lead.unit }}<br><span class="muted">{{ lead.created_at }}</span></p>
+    {% empty %}<p class="muted">No contact leads yet.</p>{% endfor %}
+  </article>
+</section>
+<section class="admin-grid two-col">
+  <article class="dash-card">
+    <h2>Latest Viewing Requests</h2>
+    {% for request in latest_requests %}
+      <p><strong>{{ request.name }}</strong> asked about {{ request.unit }}<br><span class="muted">{{ request.phone }} · {{ request.created_at }}</span></p>
+    {% empty %}<p class="muted">No viewing requests yet.</p>{% endfor %}
+  </article>
+  <article class="dash-card">
+    <h2>Open Listing Reports</h2>
+    {% for report in open_reports %}
+      <p><strong>{{ report.get_reason_display }}</strong> · {{ report.building }}{% if report.unit %} · {{ report.unit.get_unit_type_display }}{% endif %}<br><span class="muted">{{ report.created_at }}</span></p>
+    {% empty %}<p class="muted">No open reports.</p>{% endfor %}
+  </article>
+</section>
+<section class="dash-card">
+  <h2>Latest Searches</h2>
+  <div class="responsive-table"><table>
+    <thead><tr><th>Search</th><th>Radius</th><th>Results</th><th>When</th></tr></thead>
+    <tbody>{% for search in latest_searches %}<tr><td data-label="Search">{{ search.query|default:'Map Search' }}</td><td data-label="Radius">{{ search.radius_km }} km</td><td data-label="Results">{{ search.result_count }}</td><td data-label="When">{{ search.created_at }}</td></tr>{% empty %}<tr><td colspan="4">No searches yet.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endblock %}
